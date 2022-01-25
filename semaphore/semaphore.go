@@ -2,20 +2,16 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 )
 
-var (
-	ErrNoTicket          = errors.New("no ticket")
-	ErrNoTicketToRelease = errors.New("no ticket to release")
-)
-
 type (
+	// Sema 信号量模式
 	Sema interface {
 		Acquire(ctx context.Context) error
 		Release(ctx context.Context) error
+		Try()
 	}
 
 	Worker struct {
@@ -56,12 +52,27 @@ func (w *Worker) Release(ctx context.Context) error {
 	}
 }
 
+// Try would block until get available worker
+func (w *Worker) Try() {
+	for {
+		select {
+		case <-w.ch:
+			return
+		default:
+			continue
+		}
+	}
+}
+
 func main() {
 	sema := New(1)
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*2)
 
 	err := sema.Acquire(ctx)
+	fmt.Printf("err: %+v \n", err)
+
+	err = sema.Release(ctx)
 	fmt.Printf("err: %+v \n", err)
 
 	err = sema.Acquire(ctx)
