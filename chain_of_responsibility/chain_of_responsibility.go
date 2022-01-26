@@ -7,13 +7,13 @@ import (
 
 type (
 	Chain struct {
-		chain HandlerChain
-		tmp   HandlerChain
+		chain Chainer
+		tmp   Chainer
 	}
 
-	HandlerChain interface {
+	Chainer interface {
 		// setNext set next handler
-		setNext(h HandlerChain) HandlerChain
+		setNext(h Chainer) Chainer
 
 		// runChain run all this chain handler
 		runChain(ctx context.Context) error
@@ -24,10 +24,10 @@ type (
 )
 
 func NewChain() *Chain {
-	return &Chain{chain: &startHandler{}}
+	return &Chain{chain: &startChainer{}}
 }
 
-func (e *Chain) Next(h HandlerChain) *Chain {
+func (e *Chain) Next(h Chainer) *Chain {
 	if e.tmp == nil {
 		e.chain.setNext(h)
 	} else {
@@ -41,16 +41,16 @@ func (e *Chain) Exec(ctx context.Context) error {
 	return e.chain.runChain(ctx)
 }
 
-type baseHandler struct {
-	next HandlerChain
+type baseChainer struct {
+	next Chainer
 }
 
-func (b *baseHandler) setNext(h HandlerChain) HandlerChain {
+func (b *baseChainer) setNext(h Chainer) Chainer {
 	b.next = h
 	return h
 }
 
-func (b *baseHandler) runChain(ctx context.Context) error {
+func (b *baseChainer) runChain(ctx context.Context) error {
 	if b.next != nil {
 		if err := b.next.handle(ctx); err != nil {
 			return err
@@ -62,46 +62,46 @@ func (b *baseHandler) runChain(ctx context.Context) error {
 	return nil
 }
 
-type startHandler struct {
-	baseHandler
+type startChainer struct {
+	baseChainer
 }
 
-func (c *startHandler) handle(ctx context.Context) error {
+func (c *startChainer) handle(ctx context.Context) error {
 	return nil
 }
 
-type CheckHandler struct {
-	baseHandler
+type CheckChainer struct {
+	baseChainer
 }
 
-func (c *CheckHandler) handle(ctx context.Context) error {
+func (c *CheckChainer) handle(ctx context.Context) error {
 	fmt.Println("do check")
 	return nil
 }
 
-type RecheckHandler struct {
-	baseHandler
+type RecheckChainer struct {
+	baseChainer
 }
 
-func (c *RecheckHandler) handle(ctx context.Context) error {
+func (c *RecheckChainer) handle(ctx context.Context) error {
 	fmt.Println("do recheck")
 	return nil
 }
 
-type SubmitHandler struct {
-	baseHandler
+type SubmitChainer struct {
+	baseChainer
 }
 
-func (c *SubmitHandler) handle(ctx context.Context) error {
+func (c *SubmitChainer) handle(ctx context.Context) error {
 	fmt.Println("do submit")
 	return nil
 }
 
 func main() {
 	err := NewChain().
-		Next(&CheckHandler{}).
-		Next(&SubmitHandler{}).
-		Next(&RecheckHandler{}).
+		Next(&CheckChainer{}).
+		Next(&SubmitChainer{}).
+		Next(&RecheckChainer{}).
 		Exec(context.Background())
 
 	fmt.Println("err: ", err)
