@@ -11,8 +11,10 @@
 - [x] 信号量模式
 - [x] 单例模式
 - [x] 策略模式
-- [ ] fan-in
+- [x] fan-in
 - [ ] fan-out
 - [ ] pub-sub
 - [x] 责任链模式
 - [ ] 命令模式
+- [x] pipeline
+

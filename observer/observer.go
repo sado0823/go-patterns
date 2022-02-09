@@ -40,11 +40,11 @@ type (
 	}
 )
 
-func NewOutPutNotifier() *OutPutNotifier {
+func NewOutPutNotifier() Notifier {
 	return &OutPutNotifier{store: map[Observer]struct{}{}}
 }
 
-func NewEventObserver(fn func(e Event)) *EventObserver {
+func NewEventObserver(fn func(e Event)) Observer {
 	return &EventObserver{fn}
 }
 
